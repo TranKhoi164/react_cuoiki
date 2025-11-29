@@ -15,7 +15,7 @@
     "noEmit": true,
 
     // ⚠️ Dòng quan trọng nhất
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
 
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
