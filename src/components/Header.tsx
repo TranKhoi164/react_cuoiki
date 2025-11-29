@@ -27,26 +27,31 @@ const Header: React.FC = () => {
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           <Link to="/" style={{ color: 'inherit', textDecoration: 'none' }}>
-            My App
+            Cửa hàng trực tuyến
           </Link>
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           {isAuthenticated ? (
             <>
               <Typography variant="body1" sx={{ alignSelf: 'center' }}>
-                {account?.username}
+                Xin chào, {account?.username}
               </Typography>
+              {account?.role === 1 && (
+                <Button color="inherit" component={Link} to="/create_product">
+                  Tạo sản phẩm
+                </Button>
+              )}
               <Button color="inherit" onClick={handleLogout}>
-                Logout
+                Đăng xuất
               </Button>
             </>
           ) : (
             <>
               <Button color="inherit" component={Link} to="/login">
-                Login
+                Đăng nhập
               </Button>
               <Button color="inherit" component={Link} to="/register">
-                Register
+                Đăng ký
               </Button>
             </>
           )}
