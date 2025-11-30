@@ -38,6 +38,7 @@ export interface ProductPayload {
   image?: string;
   price: number;
   visible?: boolean;
+  quantity?: number;
 }
 
 export interface Product extends ProductPayload {
