@@ -17,12 +17,9 @@ import {
   Divider,
   useTheme,
   Chip,
-  IconButton, // Thêm IconButton cho nút cộng/trừ
+  IconButton,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-// Cần giả định interface Product có thêm quantity: number
-// Nếu interface Product gốc không có, bạn cần thêm nó vào:
-// export interface Product { ... quantity: number; ... }
 import { productApi, Product } from '../services/api';
 import { useAppSelector } from '../app/hooks';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -30,8 +27,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import RemoveIcon from '@mui/icons-material/Remove'; // Icon trừ
-import AddIcon from '@mui/icons-material/Add'; // Icon cộng
+import RemoveIcon from '@mui/icons-material/Remove';
+import AddIcon from '@mui/icons-material/Add';
+
+// ----------------------------------------------------------------------------------
+// THÊM IMPORTS CHO ORDER API
+import { orderApi, OrderStatus, CreateOrderPayload } from '../services/orderApi';
+// ----------------------------------------------------------------------------------
 
 // Hàm định dạng tiền tệ
 const formatCurrency = (value: number) =>
@@ -41,15 +43,25 @@ const ProductDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const theme = useTheme();
+
   const { account } = useAppSelector((state) => state.user);
+
+
+  // Giả định account có _id để làm accountId. Nếu không có, dùng ID giả.
+  const accountId = account?._id || 'mocked_user_id_for_canvas';
+
   const isAdmin = account?.role === 1;
 
   const [product, setProduct] = React.useState<Product | null>(null);
   const [loading, setLoading] = React.useState(true);
-
-  // --- STATE MỚI: Số lượng người dùng chọn ---
   const [selectedQuantity, setSelectedQuantity] = React.useState(1);
-  // ---------------------------------------------
+
+  // ----------------------------------------------------------------------------------
+  // STATE MỚI CHO ORDER
+  const [isOrdering, setIsOrdering] = React.useState(false);
+  const [orderSuccess, setOrderSuccess] = React.useState<string | null>(null);
+  const [orderError, setOrderError] = React.useState<string | null>(null);
+  // ----------------------------------------------------------------------------------
 
   const [formValues, setFormValues] = React.useState({
     name: '',
@@ -57,7 +69,6 @@ const ProductDetail: React.FC = () => {
     price: '',
     image: '',
     visible: true,
-    quantity: 0,
   });
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -77,9 +88,7 @@ const ProductDetail: React.FC = () => {
           price: String(data.price),
           image: data.image || '',
           visible: data.visible !== false,
-          quantity: data.quantity || 0,
         });
-        // Thiết lập số lượng chọn ban đầu là 1
         setSelectedQuantity(1);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Không thể tải sản phẩm';
@@ -117,9 +126,6 @@ const ProductDetail: React.FC = () => {
           image: formValues.image,
           price: Number(formValues.price),
           visible: formValues.visible,
-          quantity: product?.quantity
-          // Giả định Admin có thể cập nhật quantity qua form (nếu cần)
-          // quantity: Number(formValues.quantity), 
         },
         account?.role,
       );
@@ -133,29 +139,24 @@ const ProductDetail: React.FC = () => {
     }
   };
 
-  // --- LOGIC CHO SỐ LƯỢNG ---
+  const availableQuantity = product?.quantity ?? 100;
+
   const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!product) return;
     let value = parseInt(event.target.value);
 
-    if (!product.quantity) return
-
-    // Giới hạn tối thiểu là 1
     if (isNaN(value) || value < 1) {
       value = 1;
     }
-    // Giới hạn tối đa là số lượng tồn kho
-    else if (value > product.quantity) {
-      value = product.quantity;
+    else if (value > availableQuantity) {
+      value = availableQuantity;
     }
 
     setSelectedQuantity(value);
   };
 
   const incrementQuantity = () => {
-    if (!product) return
-    if (!product.quantity) return
-    if (product && selectedQuantity < product.quantity) {
+    if (selectedQuantity < availableQuantity) {
       setSelectedQuantity(prev => prev + 1);
     }
   };
@@ -165,7 +166,53 @@ const ProductDetail: React.FC = () => {
       setSelectedQuantity(prev => prev - 1);
     }
   };
-  // -------------------------
+
+  // ----------------------------------------------------------------------------------
+  // HÀM TẠO ĐƠN HÀNG MỚI
+  const handleCreateOrder = async (targetStatus: OrderStatus) => {
+    if (!product || availableQuantity === 0 || !accountId) {
+      setOrderError('Không thể tạo đơn hàng: Thiếu sản phẩm hoặc ID người dùng.');
+      return;
+    }
+    if (!account?.address) {
+      setOrderError('Người dùng chưa cập nhật địa chỉ')
+      return
+    }
+
+    setIsOrdering(true);
+    setOrderSuccess(null);
+    setOrderError(null);
+
+    const payload: CreateOrderPayload = {
+      product: product._id, // ID sản phẩm
+      quantity: selectedQuantity,
+      paymentOffline: true, // Giả định thanh toán khi nhận hàng
+      shippingAddress: '123 Đường ABC, Phường XYZ, Hà Nội', // Placeholder
+      accountId: accountId,
+    };
+
+    try {
+      const createdOrder = await orderApi.createOrder(payload);
+      const actionText = targetStatus === 'pending' ? 'đặt hàng' : 'thêm vào giỏ hàng';
+
+      // Cập nhật trạng thái sau khi tạo đơn hàng
+      if (createdOrder.status !== targetStatus) {
+        // Gọi API cập nhật trạng thái nếu status mặc định của backend không khớp
+        await orderApi.updateOrderStatus(createdOrder._id, targetStatus);
+        setOrderSuccess(`Đã ${actionText} thành công! Đơn hàng được cập nhật trạng thái thành ${targetStatus}.`);
+      } else {
+        setOrderSuccess(`Đã ${actionText} thành công! Đơn hàng ID: ${createdOrder._id}`);
+      }
+
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Lỗi không xác định khi tạo đơn hàng.';
+      setOrderError(message);
+    } finally {
+      setIsOrdering(false);
+    }
+  };
+  // ----------------------------------------------------------------------------------
+
 
   if (loading) {
     return (
@@ -174,10 +221,6 @@ const ProductDetail: React.FC = () => {
       </Box>
     );
   }
-
-  // Giả định product.quantity luôn là số (ví dụ 100) nếu không có trong data
-  // Dùng toán tử nullish coalescing hoặc kiểm tra if:
-  const availableQuantity = product?.quantity ?? 100;
 
   if (!product) {
     return (
@@ -199,6 +242,7 @@ const ProductDetail: React.FC = () => {
           Quay lại
         </Button>
 
+        {/* Thông báo chung cho Admin/Update */}
         {error && (
           <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
             {error}
@@ -210,10 +254,20 @@ const ProductDetail: React.FC = () => {
           </Alert>
         )}
 
+        {/* Thông báo cho chức năng Order */}
+        {orderError && (
+          <Alert severity="error" onClose={() => setOrderError(null)} sx={{ mb: 2 }}>
+            {orderError}
+          </Alert>
+        )}
+        {orderSuccess && (
+          <Alert severity="success" onClose={() => setOrderSuccess(null)} sx={{ mb: 2 }}>
+            {orderSuccess}
+          </Alert>
+        )}
+
         <Grid container spacing={4} component={Card} elevation={5} sx={{ p: 0 }}>
-          {/* Cột 1: Hình ảnh (Giữ nguyên) */}
           <Grid size={{ xs: 12, md: 6 }}>
-            {/* ... (Code hình ảnh giữ nguyên) ... */}
             {product.image ? (
               <CardMedia
                 component="img"
@@ -244,11 +298,10 @@ const ProductDetail: React.FC = () => {
             )}
           </Grid>
 
-          {/* Cột 2: Thông tin/Form chỉnh sửa */}
           <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex' }}>
             <CardContent sx={{ width: '100%', p: 3 }}>
               {isAdmin ? (
-                /* Giao diện Admin (Giữ nguyên) */
+                /* Giao diện Admin: Form chỉnh sửa */
                 <Box component="form" onSubmit={handleUpdate}>
                   <Typography variant="h5" component="h2" mb={3} display="flex" alignItems="center">
                     <EditIcon sx={{ mr: 1 }} /> Chỉnh sửa Sản phẩm
@@ -276,17 +329,14 @@ const ProductDetail: React.FC = () => {
                   </Stack>
                 </Box>
               ) : (
-                /* Giao diện Người dùng (Đã cập nhật số lượng) */
+                /* Giao diện Người dùng */
                 <Stack spacing={2}>
-
-                  {/* Tiêu đề sản phẩm */}
                   <Typography variant="h5" component="h1" sx={{ fontWeight: 500 }}>
                     {product.name}
                   </Typography>
 
                   <Divider />
 
-                  {/* Khu vực Giá */}
                   <Box sx={{ bgcolor: theme.palette.primary.light + '10', p: 2, borderRadius: 1 }}>
                     <Stack direction="row" alignItems="center" spacing={3}>
                       <Typography variant="h3" component="p" color="primary.main" fontWeight="bold">
@@ -297,29 +347,28 @@ const ProductDetail: React.FC = () => {
 
                   <Divider sx={{ my: 2 }} />
 
-                  {/* =========== PHẦN SỐ LƯỢNG MỚI =========== */}
+                  {/* PHẦN SỐ LƯỢNG */}
                   <Stack direction="row" alignItems="center" spacing={4}>
                     <Typography variant="body1" color="text.secondary">
                       Số Lượng
                     </Typography>
 
                     <Box sx={{ display: 'flex', border: '1px solid', borderColor: 'grey.300', borderRadius: 1 }}>
-                      {/* Nút Trừ */}
                       <IconButton
                         size="small"
                         onClick={decrementQuantity}
-                        disabled={selectedQuantity <= 1}
+                        disabled={selectedQuantity <= 1 || isOrdering}
                         sx={{ borderRadius: 0, borderRight: '1px solid', borderColor: 'grey.300' }}
                       >
                         <RemoveIcon fontSize="small" />
                       </IconButton>
 
-                      {/* Input Số lượng */}
                       <TextField
                         value={selectedQuantity}
                         onChange={handleQuantityChange}
                         variant="standard"
                         type="number"
+                        disabled={isOrdering}
                         inputProps={{
                           min: 1,
                           max: availableQuantity,
@@ -337,11 +386,10 @@ const ProductDetail: React.FC = () => {
                         }}
                       />
 
-                      {/* Nút Cộng */}
                       <IconButton
                         size="small"
                         onClick={incrementQuantity}
-                        disabled={selectedQuantity >= availableQuantity}
+                        disabled={selectedQuantity >= availableQuantity || isOrdering}
                         sx={{ borderRadius: 0, borderLeft: '1px solid', borderColor: 'grey.300' }}
                       >
                         <AddIcon fontSize="small" />
@@ -352,11 +400,10 @@ const ProductDetail: React.FC = () => {
                       {availableQuantity} CÒN HÀNG
                     </Typography>
                   </Stack>
-                  {/* ========================================= */}
 
                   <Divider sx={{ my: 2 }} />
 
-                  {/* Khu vực Mô tả (Giữ nguyên) */}
+                  {/* Khu vực Mô tả */}
                   <Typography variant="h6" gutterBottom>Mô tả sản phẩm</Typography>
                   <Typography variant="body1" color="text.secondary" paragraph sx={{ maxHeight: 150, overflowY: 'auto' }}>
                     {product.description || 'Sản phẩm này chưa có mô tả chi tiết. Vui lòng liên hệ để biết thêm thông tin.'}
@@ -364,19 +411,19 @@ const ProductDetail: React.FC = () => {
 
                   <Divider sx={{ my: 2 }} />
 
-                  {/* Nút Mua Hàng/Thêm vào Giỏ hàng (Giữ nguyên) */}
+                  {/* Nút Mua Hàng/Thêm vào Giỏ hàng */}
                   <Grid container spacing={2} sx={{ mt: 3 }}>
                     <Grid size={{ xs: 12, md: 6 }}>
                       <Button
                         variant="contained"
                         color="error"
                         size="large"
-                        startIcon={<ShoppingCartIcon />}
+                        startIcon={isOrdering ? <CircularProgress size={20} color="inherit" /> : <ShoppingCartIcon />}
                         sx={{ width: '100%', py: 1.5, fontWeight: 'bold' }}
-                        disabled={availableQuantity === 0} // Vô hiệu hóa nếu hết hàng
+                        disabled={availableQuantity === 0 || isOrdering}
+                        onClick={() => handleCreateOrder('inCart')} // THÊM VÀO GIỎ HÀNG -> IN CART
                       >
                         Thêm vào Giỏ hàng
-
                       </Button>
                     </Grid>
                     <Grid size={{ xs: 12, md: 6 }}>
@@ -385,9 +432,10 @@ const ProductDetail: React.FC = () => {
                         color="error"
                         size="large"
                         sx={{ width: '100%', py: 1.5 }}
-                        disabled={availableQuantity === 0} // Vô hiệu hóa nếu hết hàng
+                        disabled={availableQuantity === 0 || isOrdering}
+                        onClick={() => handleCreateOrder('pending')} // MUA NGAY -> PENDING
                       >
-                        Mua ngay ({selectedQuantity} sản phẩm)
+                        {isOrdering ? 'Đang Đặt...' : `Mua ngay (${selectedQuantity} sản phẩm)`}
                       </Button>
                     </Grid>
                   </Grid>
