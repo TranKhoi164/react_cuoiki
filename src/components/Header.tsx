@@ -33,7 +33,7 @@ const Header: React.FC = () => {
         <Box sx={{ display: 'flex', gap: 2 }}>
           {isAuthenticated ? (
             <>
-              <Typography variant="body1" sx={{ alignSelf: 'center' }}>
+              <Typography variant="body1" sx={{ alignSelf: 'center', cursor: 'pointer' }} onClick={() => navigate('/profile')}>
                 Xin chào, {account?.username}
               </Typography>
               {account?.role === 1 && (

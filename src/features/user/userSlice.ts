@@ -3,11 +3,10 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export interface Account {
   _id: string;
   username: string;
-  fullName?: string;
-  avatar?: string;
+  // avatar?: string;
   dateOfBirth?: string;
-  role: number;
-  address?: object;
+  role: 0 | 1;
+  address?: string;
   createdAt?: string;
   updatedAt?: string;
 }
