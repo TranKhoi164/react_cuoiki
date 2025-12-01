@@ -1,3 +1,5 @@
+import axios from "axios";
+
 const API_BASE_URL = 'http://localhost:5000';
 
 export interface RegisterData {
@@ -17,19 +19,24 @@ export interface LoginData {
 export interface Account {
   _id: string;
   username: string;
-  fullName?: string;
-  avatar?: string;
-  dateOfBirth?: string;
-  role: number;
-  address?: object;
+  // fullName: string | null; // Nếu bạn bật lại trường này trong schema
+  // avatar: string | null; // Nếu bạn bật lại trường này trong schema
+  dateOfBirth?: string; // Mongoose trả về Date, JSON/TS là string
+  role: 0 | 1; // 0: user, 1: admin
+  address?: string;
   createdAt: string;
   updatedAt: string;
 }
-
 export interface ApiResponse<T> {
   message: string;
   account?: T;
   error?: string;
+}
+export interface UpdateAccountPayload {
+  username?: string;
+  dateOfBirth?: string | Date;
+  address?: string;
+  // BẮT BUỘC KHÔNG BAO GỒM: password, role
 }
 
 export interface ProductPayload {
@@ -52,6 +59,8 @@ export interface ProductQuery {
   minPrice?: number;
   maxPrice?: number;
 }
+
+const ACCOUNT_API_URL = `${API_BASE_URL}/accounts`;
 
 const withJsonHeaders = () => ({
   'Content-Type': 'application/json',
@@ -121,7 +130,47 @@ export const accountApi = {
 
     return response.json();
   },
+
+  /**
+   * [GET] Lấy thông tin chi tiết tài khoản.
+   * Route: GET /api/accounts/:id
+   * @param id ID của tài khoản
+   */
+  getAccountById: async (id: string): Promise<Account> => {
+    try {
+      const response = await axios.get<Account>(`${ACCOUNT_API_URL}/${id}`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || `Lỗi khi lấy thông tin tài khoản ID: ${id}.`);
+      }
+      throw new Error('Lỗi không xác định khi gọi API.');
+    }
+  },
+
+  /**
+   * [PATCH] Cập nhật thông tin tài khoản.
+   * Route: PATCH /api/accounts/:id
+   * @param id ID của tài khoản cần cập nhật
+   * @param payload Dữ liệu cập nhật (dateOfBirth, address, username)
+   */
+  updateAccount: async (id: string, payload: UpdateAccountPayload): Promise<Account> => {
+    try {
+      const response = await axios.patch<{ message: string, account: Account }>(
+        `${ACCOUNT_API_URL}/${id}`,
+        payload
+      );
+      return response.data.account;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || `Lỗi khi cập nhật tài khoản ID: ${id}.`);
+      }
+      throw new Error('Lỗi không xác định khi gọi API.');
+    }
+  },
 };
+
+
 
 export const productApi = {
   list: async (query: ProductQuery = {}): Promise<Product[]> => {
