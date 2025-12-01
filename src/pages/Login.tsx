@@ -33,7 +33,7 @@ const Login: React.FC = () => {
         navigate('/');
       }
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please try again.');
+      setError(err.message || 'Đăng nhập thất bại, vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ const Login: React.FC = () => {
       >
         <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
           <Typography component="h1" variant="h4" align="center" gutterBottom>
-            Login
+            Đăng nhập
           </Typography>
           {error && (
             <Alert severity="error" sx={{ marginBottom: 2 }}>
@@ -64,7 +64,7 @@ const Login: React.FC = () => {
               required
               fullWidth
               id="username"
-              label="Username"
+              label="Tên đăng nhập"
               name="username"
               autoComplete="username"
               autoFocus
@@ -76,7 +76,7 @@ const Login: React.FC = () => {
               required
               fullWidth
               name="password"
-              label="Password"
+              label="Mật khẩu"
               type="password"
               id="password"
               autoComplete="current-password"
@@ -90,13 +90,13 @@ const Login: React.FC = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </Button>
             <Box textAlign="center">
               <Typography variant="body2">
-                Don't have an account?{' '}
+                Chưa có tài khoản?{' '}
                 <Link to="/register" style={{ textDecoration: 'none' }}>
-                  Register here
+                  Đăng ký ngay
                 </Link>
               </Typography>
             </Box>
@@ -108,4 +108,3 @@ const Login: React.FC = () => {
 };
 
 export default Login;
-

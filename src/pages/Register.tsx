@@ -27,12 +27,12 @@ const Register: React.FC = () => {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Mật khẩu xác nhận không khớp');
       return;
     }
 
     if (password.length < 3) {
-      setError('Password must be at least 3 characters long');
+      setError('Mật khẩu phải có ít nhất 3 ký tự');
       return;
     }
 
@@ -45,7 +45,7 @@ const Register: React.FC = () => {
         navigate('/');
       }
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setError(err.message || 'Đăng ký thất bại, vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -63,7 +63,7 @@ const Register: React.FC = () => {
       >
         <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
           <Typography component="h1" variant="h4" align="center" gutterBottom>
-            Register
+            Đăng ký
           </Typography>
           {error && (
             <Alert severity="error" sx={{ marginBottom: 2 }}>
@@ -76,7 +76,7 @@ const Register: React.FC = () => {
               required
               fullWidth
               id="username"
-              label="Username"
+              label="Tên đăng nhập"
               name="username"
               autoComplete="username"
               autoFocus
@@ -88,7 +88,7 @@ const Register: React.FC = () => {
               required
               fullWidth
               name="password"
-              label="Password"
+              label="Mật khẩu"
               type="password"
               id="password"
               autoComplete="new-password"
@@ -100,7 +100,7 @@ const Register: React.FC = () => {
               required
               fullWidth
               name="confirmPassword"
-              label="Confirm Password"
+              label="Xác nhận mật khẩu"
               type="password"
               id="confirmPassword"
               value={confirmPassword}
@@ -113,13 +113,13 @@ const Register: React.FC = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? 'Registering...' : 'Register'}
+              {loading ? 'Đang đăng ký...' : 'Đăng ký'}
             </Button>
             <Box textAlign="center">
               <Typography variant="body2">
-                Already have an account?{' '}
+                Đã có tài khoản?{' '}
                 <Link to="/login" style={{ textDecoration: 'none' }}>
-                  Login here
+                  Đăng nhập ngay
                 </Link>
               </Typography>
             </Box>
@@ -131,4 +131,3 @@ const Register: React.FC = () => {
 };
 
 export default Register;
-
