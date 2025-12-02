@@ -41,6 +41,9 @@ const Header: React.FC = () => {
                   Tạo sản phẩm
                 </Button>
               )}
+              <Button color="inherit" component={Link} to="/purchase">
+                {account?.role === 1 ? 'Quản lý đơn hàng' : 'Đơn hàng của tôi'}
+              </Button>
               <Button color="inherit" onClick={handleLogout}>
                 Đăng xuất
               </Button>

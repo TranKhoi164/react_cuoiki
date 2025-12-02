@@ -8,6 +8,8 @@ import CreateProduct from './pages/CreateProduct';
 import ProductDetail from './pages/ProductDetail';
 import './App.css';
 import Profile from './pages/Profile';
+import Payment from './pages/Payment';
+import Purchase from './pages/Purchase';
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
           <Route path="/create_product" element={<CreateProduct />} />
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/purchase" element={<Purchase />} />
         </Routes>
       </div>
     </Router>

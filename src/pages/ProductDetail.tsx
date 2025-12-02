@@ -187,21 +187,26 @@ const ProductDetail: React.FC = () => {
       product: product._id, // ID sản phẩm
       quantity: selectedQuantity,
       paymentOffline: true, // Giả định thanh toán khi nhận hàng
-      shippingAddress: '123 Đường ABC, Phường XYZ, Hà Nội', // Placeholder
+      shippingAddress: account.address, // Use actual user address
       accountId: accountId,
     };
 
     try {
       const createdOrder = await orderApi.createOrder(payload);
-      const actionText = targetStatus === 'pending' ? 'đặt hàng' : 'thêm vào giỏ hàng';
 
-      // Cập nhật trạng thái sau khi tạo đơn hàng
+      // For "Mua ngay" (pending), redirect to payment page
+      if (targetStatus === 'pending') {
+        navigate(`/payment?orderIds=${createdOrder._id}`);
+        return;
+      }
+
+      // For "Thêm vào giỏ hàng" (inCart)
+      const actionText = 'thêm vào giỏ hàng';
       if (createdOrder.status !== targetStatus) {
-        // Gọi API cập nhật trạng thái nếu status mặc định của backend không khớp
         await orderApi.updateOrderStatus(createdOrder._id, targetStatus);
-        setOrderSuccess(`Đã ${actionText} thành công! Đơn hàng được cập nhật trạng thái thành ${targetStatus}.`);
+        setOrderSuccess(`Đã ${actionText} thành công!`);
       } else {
-        setOrderSuccess(`Đã ${actionText} thành công! Đơn hàng ID: ${createdOrder._id}`);
+        setOrderSuccess(`Đã ${actionText} thành công!`);
       }
 
     } catch (err) {

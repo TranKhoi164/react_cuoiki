@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Giả định URL cơ sở của Backend Express/Nodejs
 const API_BASE_URL = 'http://localhost:5000';
-const ORDER_API_URL = `${API_BASE_URL}/api/orders`;
+const ORDER_API_URL = `${API_BASE_URL}/orders`;
 
 // ----------------------------------------------------
 // 1. INTERFACE/TYPE ĐỒNG BỘ VỚI BACKEND

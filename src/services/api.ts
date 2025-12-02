@@ -1,5 +1,12 @@
 import axios from "axios";
 
+// You are an software engineer proficient in web development. Make me a order management for both normal user and admin. The flow goes like this, when user click Mua ngay in product detail page, create order with    
+//  status 'pending', redirect it to payment page (not real payment, just show the price by multiply price with quantity of product in order), and show information of order created previously, when user hit 'xác        
+// nhận' redirect them to 'purchase' page. There is 4 tab in order page 'chờ xác nhận', 'đang giao hàng', 'hoàn thành', 'đã huỷ', each tab show order with aligned status 'pending', 'beingShipped', 
+// 'delivered', 'cancelled'. For admin role, each tab show order's infor of all user and show infor of user make that order as well, in tab 'chờ xác nhận' user can click 'huỳ đơn' below order infor to change 
+// status of that order to 'cancelled', admin can click 'xác nhận' below order box to change order status to 'beingShipped'. In tab 'đang giao hàng', user can click 'đã nhận' to change order status to 
+// 'delivered'. Both admin and user can access order_management page though header link 
+
 const API_BASE_URL = 'http://localhost:5000';
 
 export interface RegisterData {

@@ -13,14 +13,15 @@ import {
 } from '@mui/material';
 import { accountApi, Account, UpdateAccountPayload } from '../services/api';
 // Giả định bạn có app/hooks.ts để sử dụng Redux store
-import { useAppSelector } from '../app/hooks';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import { setAccount } from '../features/user/userSlice';
 
 // XÓA: const CURRENT_USER_ID = '60c72b2f90b8c60015b6c33c'; 
 
 const UserProfile: React.FC = () => {
   const { account } = useAppSelector((state) => state.user); // Lấy account từ Redux state
   console.log('acount', account);
-
+  const dispatch = useAppDispatch();
   const [profile, setProfile] = useState<Account | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -88,6 +89,7 @@ const UserProfile: React.FC = () => {
     try {
       const updatedProfile = await accountApi.updateAccount(userId, payload);
       setProfile(updatedProfile); // Cập nhật state profile chính
+      dispatch(setAccount(updatedProfile));
       setSuccess('Cập nhật hồ sơ thành công!');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Lỗi không xác định khi cập nhật.');
