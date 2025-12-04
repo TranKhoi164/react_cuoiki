@@ -1,0 +1,8 @@
+{
+  "message": "Login success",
+  "account": {
+    "_id": "u1",
+    "username": "demo",
+    "role": 1
+  }
+}
