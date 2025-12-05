@@ -10,6 +10,7 @@ import './App.css';
 import Profile from './pages/Profile';
 import Payment from './pages/Payment';
 import Purchase from './pages/Purchase';
+import CartPage from './pages/Cart';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/purchase" element={<Purchase />} />
+          <Route path="/cart" element={<CartPage />} />
         </Routes>
       </div>
     </Router>

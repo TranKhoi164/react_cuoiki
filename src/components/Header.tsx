@@ -4,7 +4,8 @@ import { AppBar, Toolbar, Button, Typography, Box } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { clearAccount } from '../features/user/userSlice';
 import { accountApi } from '../services/api';
-
+import { CardTravel } from '@mui/icons-material';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -41,9 +42,15 @@ const Header: React.FC = () => {
                   Tạo sản phẩm
                 </Button>
               )}
+
               <Button color="inherit" component={Link} to="/purchase">
                 {account?.role === 1 ? 'Quản lý đơn hàng' : 'Đơn hàng của tôi'}
               </Button>
+              {account?.role === 0 && (
+                <Button color="inherit" component={Link} to="/cart">
+                  <ShoppingCartOutlinedIcon /> Giỏ hàng
+                </Button>
+              )}
               <Button color="inherit" onClick={handleLogout}>
                 Đăng xuất
               </Button>
