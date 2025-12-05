@@ -10,7 +10,7 @@ export interface OrderItem {
 
 export interface Order {
   _id: string;
-  account: string;                    // ID người mua
+  account: string;                    
   items: OrderItem[];
   totalAmount: number;
   status: OrderStatus;

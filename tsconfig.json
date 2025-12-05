@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es5",  // Giữ lại 'es5' để đảm bảo khả năng tương thích trình duyệt rộng hơn
     "lib": [
       "dom",
       "dom.iterable",
@@ -12,19 +12,19 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
+    "noFallthroughCasesInSwitch": true, // Giữ lại từ HEAD
+    "module": "esnext", // Giữ lại 'esnext' (hiện đại hơn CommonJS)
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
 
-    // 3 DÒNG MỚI THÊM VÀO ĐÂY (đừng bỏ sót)
-    "baseUrl": ".",                    // thêm
-    "paths": {                         // thêm
-      "@/*": ["src/*"]                 // thêm
-    }                                  // thêm
+    // Tùy chỉnh của bạn: Base URL và Path Aliases
+    "baseUrl": ".", 
+    "paths": { 
+      "@/*": ["src/*"] 
+    } 
   },
   "include": [
     "src"
