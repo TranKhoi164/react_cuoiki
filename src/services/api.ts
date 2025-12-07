@@ -145,11 +145,24 @@ export const accountApi = {
    */
   getAccountById: async (id: string): Promise<Account> => {
     try {
-      const response = await axios.get<Account>(`${ACCOUNT_API_URL}/${id}`);
+      const response = await axios.get<Account>(`${ACCOUNT_API_URL}/`);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        throw new Error(error.response?.data?.message || `Lỗi khi lấy thông tin tài khoản ID: ${id}.`);
+        throw new Error(error.response?.data?.message || `Lỗi khi lấy thông tin tài khoản`);
+      }
+      throw new Error('Lỗi không xác định khi gọi API.');
+    }
+  },
+
+  getAllAccounts: async (): Promise<Account[]> => {
+    try {
+      // Gọi API mà không có ID trong URL
+      const response = await axios.get<Account[]>(`${ACCOUNT_API_URL}/`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || `Lỗi khi lấy tất cả tài khoản`);
       }
       throw new Error('Lỗi không xác định khi gọi API.');
     }
