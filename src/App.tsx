@@ -11,6 +11,8 @@ import Profile from './pages/Profile';
 import Payment from './pages/Payment';
 import Purchase from './pages/Purchase';
 import CartPage from './pages/Cart';
+import UserManagement from './pages/UserManagement';
+import OrderHistory from './pages/OrderHistory';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
           <Route path="/payment" element={<Payment />} />
           <Route path="/purchase" element={<Purchase />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/user_management" element={<UserManagement />} />
+          <Route path='/orders/history/:userId' element={<OrderHistory />} />
         </Routes>
       </div>
     </Router>

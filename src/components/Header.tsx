@@ -46,6 +46,11 @@ const Header: React.FC = () => {
               <Button color="inherit" component={Link} to="/purchase">
                 {account?.role === 1 ? 'Quản lý đơn hàng' : 'Đơn hàng của tôi'}
               </Button>
+              {account?.role == 1 && (
+                <Button color="inherit" component={Link} to="/user_management">
+                  Quản lý khách hàng
+                </Button>
+              )}
               {account?.role === 0 && (
                 <Button color="inherit" component={Link} to="/cart">
                   <ShoppingCartOutlinedIcon /> Giỏ hàng
