@@ -1,3 +1,4 @@
+import axios from "axios";
 import { Inventory } from "@mui/icons-material";
 
 const API_BASE_URL = 'http://localhost:5000';
@@ -19,19 +20,26 @@ export interface LoginData {
 export interface Account {
   _id: string;
   username: string;
-  fullName?: string;
-  avatar?: string;
-  dateOfBirth?: string;
-  role: number;
-  address?: object;
+  // fullName: string | null; // Nếu bạn bật lại trường này trong schema
+  // avatar: string | null; // Nếu bạn bật lại trường này trong schema
+  dateOfBirth?: string; // Mongoose trả về Date, JSON/TS là string
+  role: 0 | 1; // 0: user, 1: admin
+  address?: string;
   createdAt: string;
   updatedAt: string;
-}
+} 
 
 export interface ApiResponse<T> {
   message: string;
   account?: T;
   error?: string;
+}
+
+export interface UpdateAccountPayload {
+  username?: string;
+  dateOfBirth?: string | Date;
+  address?: string;
+  // BẮT BUỘC KHÔNG BAO GỒM: password, role
 }
 
 export interface ProductPayload {
@@ -45,9 +53,9 @@ export interface ProductPayload {
 // Inventory update
 export interface InventoryPayload {
   product: string;       // productId
-  sku: string;
-  attribute?: Record<string, string>;
-  stock: number;
+  // sku: string;
+  // attribute?: Record<string, string>;
+  // stock: number;
   quantity?: number;
   price: number;
   image?: string;
@@ -74,6 +82,8 @@ export interface ProductQuery {
   minPrice?: number;
   maxPrice?: number;
 }
+
+const ACCOUNT_API_URL = `${API_BASE_URL}/accounts`;
 
 // Inventory update
 export interface Inventory extends InventoryPayload {
@@ -170,7 +180,51 @@ export const accountApi = {
 
     return response.json();
   },
+
+    getAccountById: async (id: string): Promise<Account> => {
+      try {
+        const response = await axios.get<Account>(`${ACCOUNT_API_URL}/${id}`);
+        return response.data;
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          throw new Error(error.response?.data?.message || `Lỗi khi lấy thông tin tài khoản`);
+        }
+        throw new Error('Lỗi không xác định khi gọi API.');
+      }
+    },
+
+  updateAccount: async (id: string, payload: UpdateAccountPayload): Promise<Account> => {
+    try {
+      const response = await axios.patch<{ message: string, account: Account }>(
+        `${ACCOUNT_API_URL}/${id}`,
+        payload
+      );
+      return response.data.account;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.message || `Lỗi khi cập nhật tài khoản ID: ${id}.`);
+      }
+      throw new Error('Lỗi không xác định khi gọi API.');
+    }
+  },
+    getAllAccounts: async (): Promise<Account[]> => {
+      try {
+        // Gọi API mà không có ID trong URL
+        const response = await axios.get<Account[]>(`${ACCOUNT_API_URL}/`);
+        return response.data;
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          throw new Error(error.response?.data?.message || `Lỗi khi lấy tất cả tài khoản`);
+        }
+        throw new Error('Lỗi không xác định khi gọi API.');
+      }
+    },
 };
+
+
+
+
+
 
 export const productApi = {
   list: async (query: ProductQuery = {}): Promise<Product[]> => {
@@ -194,11 +248,15 @@ export const productApi = {
   },
 
   create: async (payload: ProductPayload, role?: number): Promise<Product> => {
+    console.log('🟡 Creating product with payload:', payload); // THÊM LOG
+    console.log('🟡 Role passed:', role); // THÊM LOG
     const response = await fetch(`${API_BASE_URL}/products`, {
       method: 'POST',
       headers: withAdminHeaders(role),
       body: JSON.stringify(payload),
     });
+    console.log('🟡 Response status:', response.status); // THÊM LOG
+    console.log('🟡 Response headers:', response.headers); // THÊM LOG
 
     return handleProductResponse<Product>(response);
   },

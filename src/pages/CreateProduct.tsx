@@ -68,7 +68,9 @@ const CreateProduct: React.FC = () => {
         image: '',
         visible: true,
       });
-      navigate(`/products/${product._id}`);
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Tạo sản phẩm thất bại';
       setError(message);

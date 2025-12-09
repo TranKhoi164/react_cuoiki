@@ -1,11 +1,11 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, Button, Typography, Box } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { clearAccount } from '../features/user/userSlice';
 import { accountApi } from '../services/api';
-
+import { CardTravel } from '@mui/icons-material';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -34,7 +34,7 @@ const Header: React.FC = () => {
         <Box sx={{ display: 'flex', gap: 2 }}>
           {isAuthenticated ? (
             <>
-              <Typography variant="body1" sx={{ alignSelf: 'center' }}>
+              <Typography variant="body1" sx={{ alignSelf: 'center', cursor: 'pointer' }} onClick={() => navigate('/profile')}>
                 Xin chào, {account?.username}
               </Typography>
               {account?.role === 1 && (
@@ -50,8 +50,20 @@ const Header: React.FC = () => {
                   <Button color="inherit" component={Link} to="/import-orders">
                     Phiếu nhập
                   </Button>
+
+                  <Button color="inherit" component={Link} to="/user_management">
+                    Quản lý khách hàng
+                  </Button>
                 </>
-                
+              )}
+
+              <Button color="inherit" component={Link} to="/purchase">
+                {account?.role === 1 ? 'Quản lý đơn hàng' : 'Đơn hàng của tôi'}
+              </Button>
+              {account?.role === 0 && (
+                <Button color="inherit" component={Link} to="/cart">
+                  <ShoppingCartOutlinedIcon /> Giỏ hàng
+                </Button>
               )}
               <Button color="inherit" onClick={handleLogout}>
                 Đăng xuất
